@@ -1,68 +1,33 @@
 """
 Module for using the web interface of Twitter's search.
 """
-import json
-import time
-import urllib
-import requests
-from twitterwebsearch.parser import parse_search_results
+
+import tweepy
+
+consumer_key = 'dwRRlaVZj7FYgyhnDM4UlY8QT'
+consumer_secret = 'IzoPhQvaGpn5d05OsHVFvyoiSd4b0PZ66bbN0mlzBnjTzrzySm'
+access_token = '2036531799300644864-bPqj6wL4G1vgUCpqiBDX3CPTkCojuU'
+access_token_secret = 'hmfPuAupb6AYq3L70uEti7DyWqKcKKjlrRiZygE9uNhyH'
+bearer_token = 'AAAAAAAAAAAAAAAAAAAAAOUX8gEAAAAAAMmhZDykj3k4o4vC0Nh7FIXWCoE%3DedqCn7hOBAOcFTGJprY4mbg5hx0uZuWFHEPDv7UZKYS9NnDpv7'
+
+client =  tweepy.Client(
+    bearer_token=bearer_token,
+    consumer_key=consumer_key,
+    consumer_secret= consumer_secret,
+    access_token=access_token,
+    access_token_secret=access_token_secret
+)
+
+test_test = "Hello world? "
+
+try:
+    response = client.create_tweet(test_test)
+    print(f"Tweet posted successfully! URL: https://twitter.com/user/status/{response.data['id']}")
+except tweepy.errors.Forbidden as e:
+    print(f"Error posting tweet: {e}")
+    print("Check if your Access Token has 'Read and Write' permissions.")
+except Exception as e:
+    print(f"An error occurred: {e}")
 
 
-TWITTER_PROFILE_URL = 'https://twitter.com/{term}'
-TWITTER_PROFILE_MORE_URL = 'https://twitter.com/i/profiles/show/{term}/timeline?include_available_features=1&include_entities=1&max_position={max_position}'
-TWITTER_SEARCH_URL = 'https://twitter.com/search?q={term}&src=typd&vertical=default&f=tweets'
-TWITTER_SEARCH_MORE_URL = 'https://twitter.com/i/search/timeline?q={term}&src=typd&vertical=default&f=tweets&include_available_features=1&include_entities=1&max_position={max_position}'
-
-USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.71 Safari/537.36 Edge/12.0'
-
-DEFAULT_SLEEP = 0.5
-
-def find_value(html, key):
-    pos_begin = html.find(key) + len(key) + 2
-    pos_end = html.find('"', pos_begin)
-    return html[pos_begin: pos_end]
-
-def download_tweets(search=None, profile=None, sleep=DEFAULT_SLEEP):
-    assert search or profile
-
-    term = (search or profile)
-    url = TWITTER_SEARCH_URL if search else TWITTER_PROFILE_URL
-    url_more = TWITTER_SEARCH_MORE_URL if search else TWITTER_PROFILE_MORE_URL
-
-    response = requests.get(url.format(term=urllib.quote_plus(term)), headers={'User-agent': USER_AGENT}).text
-    max_position = find_value(response, 'data-max-position')
-    min_position = find_value(response, 'data-min-position')
-
-    for tweet in parse_search_results(response.encode('utf8')):
-        yield tweet
-
-    has_more_items = True
-    last_min_position = None
-    while has_more_items:
-        response = requests.get(url_more.format(term=urllib.quote_plus(term), max_position=min_position), headers={'User-agent': USER_AGENT}).text
-        try:
-            response_dict = json.loads(response)
-        except:
-            import datetime
-            with open('__debug.response_%s.txt' % datetime.datetime.now().strftime('%Y-%m-%d.%H%M'), 'wb') as fh:
-                print >>fh, repr(response)
-            raise
-        
-        min_position = response_dict['min_position']
-        has_more_items = response_dict['has_more_items'] if profile else last_min_position != min_position
-
-        for tweet in parse_search_results(response_dict['items_html'].encode('utf8')):
-            yield tweet
-
-            if search:
-                has_more_items = True
-
-        last_min_position = min_position
-        time.sleep(sleep)
-
-
-
-def search(query):
-    for tweet in download_tweets(search=query):
-        yield tweet
 
