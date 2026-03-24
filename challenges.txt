@@ -1,0 +1,5 @@
+So first of all the searcher.py file is unable to access the twitter API.
+ Solutions 
+ 1. Create a bot that would activate once the package is called?
+    1. Create a bot that would be able to get that info.
+    2. Work on accessing the interface.
