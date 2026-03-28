@@ -1,5 +1,5 @@
-So first of all the searcher.py file is unable to access the twitter API.
- Solutions 
- 1. Create a bot that would activate once the package is called?
-    1. Create a bot that would be able to get that info.
-    2. Work on accessing the interface.
+
+I have been able to achieve authentication using both tweepy and the requests libraries the problem remains the same.
+The X developer platform requires me to pay for token in order to access data form the platform.
+
+In order to see the output for yourself you will need to create an X developer account and use all the five tokens required for authentication. (access, consumer, bearer)
